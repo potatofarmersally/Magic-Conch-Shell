@@ -1,22 +1,36 @@
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.math.BigDecimal;
+import java.util.ArrayList;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
+/**
+ * DIYInfoRead class creates the GUI interface for the 
+ * DIYProjectInfo class and allows clients to view the
+ * materials in a project.
+ * 
+ * @author Joseph
+ *
+ */
 public class DIYInfoRead extends DIYTemplateV2 {
 
 	private static final long serialVersionUID = -8160056479228037385L;
 	private DIYProjectInfo myProjectInfo;
 	private JFrame myParentFrame;
 
-	private JButton addButton;
+	private JButton viewButton;
 
 	private JLabel myNameLabel;
 	private JLabel myCostLabel;
@@ -27,26 +41,48 @@ public class DIYInfoRead extends DIYTemplateV2 {
 	private JTextField myTotalCostTextField;
 	private JTextField myPriorityTextField;
 	private JTextField myLengthTextField;
-	private JList<DIYMaterialInfo> myJList;
+	
+	private JList myJList;
+	
+	private ArrayList<String> myListDisplay;
 
+	/**
+	 * The default constructor class for DIYInfoRead
+	 * Sets up the GUI interface components
+	 * 
+	 * @param theParentFrame
+	 * @param theProjectInfo
+	 */
 	public DIYInfoRead(JFrame theParentFrame, DIYProjectInfo theProjectInfo) {
 		super(theParentFrame);
 		myProjectInfo = theProjectInfo;
+		myListDisplay = new ArrayList<>();
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setUpComponents();
 	}
 
+	/**
+	 * JButton for viewing individual material components
+	 */
 	private void setUpButtons() {
 
-		addButton = new JButton("Add");
-		addButton.addActionListener(new ActionListener() {
+		viewButton = new JButton("View");
+		viewButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent theEvent) {
-				DIYMaterialInfo materialInfo = new DIYMaterialInfo("Material", new BigDecimal(7), 7, new BigDecimal(7));
-				// TODO FIX ME!!!
+				if (!myJList.isSelectionEmpty() ) {
+					int index = myJList.getSelectedIndex();
+					DIYMaterialRead view = new DIYMaterialRead(myProjectInfo.getMaterialList().get(index),
+																myParentFrame);
+					view.setVisible(true);
+				}
 			}
 		});
 	}
 
+	/**
+	 * JLabels for the labelling project information fields
+	 */
 	private void setUpLabels() {
 
 		myNameLabel = new JLabel();
@@ -60,6 +96,9 @@ public class DIYInfoRead extends DIYTemplateV2 {
 		myLengthLabel.setText("Total Length: ");
 	}
 
+	/**
+	 *  JTextFields for viewing project information input by user
+	 */
 	private void setUpTextFields() {
 
 		myNameTextField = new JTextField();
@@ -74,45 +113,61 @@ public class DIYInfoRead extends DIYTemplateV2 {
 
 	}
 
+	/**
+	 * JList to display all materials currently in project
+	 */
 	private void setUpMaterialList() {
-		myJList = new JList();
+		
+		myJList.setPreferredSize(new Dimension(400, 300));
+		myJList.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		myJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		myJList.setSelectedIndex(0);
 	}
 
+	/**
+	 * Main set up method for all GUI components
+	 */
 	private void setUpComponents() {
-
-		myCenterPanel.setLayout(new GridLayout(8, 2));
-
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
+		JPanel northPanel = new JPanel(new GridLayout(4, 2));
+		JPanel southPanel = new JPanel(new GridBagLayout());
+		
 		setUpButtons();
 		setUpLabels();
 		setUpTextFields();
-
-		myCenterPanel.add(myNameLabel);
-		myCenterPanel.add(myNameTextField);
-
-		myCenterPanel.add(myCostLabel);
-		myCenterPanel.add(myTotalCostTextField);
-
-		myCenterPanel.add(myPriorityLabel);
-		myCenterPanel.add(myPriorityTextField);
-
-		myCenterPanel.add(myLengthLabel);
-		myCenterPanel.add(myLengthTextField);
-
-		myCenterPanel.add(addButton);
 		populateTextFields();
+		setUpMaterialList();
+
+		northPanel.add(myNameLabel);
+		northPanel.add(myNameTextField);
+
+		northPanel.add(myCostLabel);
+		northPanel.add(myTotalCostTextField);
+
+		northPanel.add(myPriorityLabel);
+		northPanel.add(myPriorityTextField);
+
+		northPanel.add(myLengthLabel);
+		northPanel.add(myLengthTextField);
+
+		southPanel.add(viewButton);
+		southPanel.add(myJList);
+		
+		myCenterPanel.setLayout(new BorderLayout());
+		myCenterPanel.add(northPanel, BorderLayout.NORTH);
+		myCenterPanel.add(southPanel, BorderLayout.SOUTH);
 	}
 
+	/**
+	 * Fills all text fields with their respective project information data types
+	 */
 	private void populateTextFields() {
 		myNameTextField.setText(myProjectInfo.getName());
 		myTotalCostTextField.setText(myProjectInfo.getTotalCost().toString());
 		myPriorityTextField.setText(Integer.toString(myProjectInfo.getPriority()));
 		myLengthTextField.setText(Double.toString(myProjectInfo.getLength()));
-
-		for (int i = 0; i < myProjectInfo.getMaterialList().size(); i++) {
-
-		}
+		
+		for (int i = 0; i < myProjectInfo.getMaterialList().size(); i++) 
+			myListDisplay.add(myProjectInfo.getMaterialList().get(i).getName());
 	}
 
 }
